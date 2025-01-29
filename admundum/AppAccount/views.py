@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .forms import User, UpdateUserForm, CustomUserCreationForm
+from .forms import User, UpdateUserForm, SignUpForm
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.views import PasswordChangeView
 from django.contrib.auth import authenticate, login, logout
@@ -16,23 +16,22 @@ def modulo_admin():
 
 
 def register_user(request):
-    data = {
-        'form' : CustomUserCreationForm()
-    }
+    form = SignUpForm()
 
     if request.method == 'POST':
-        formulario = CustomUserCreationForm(data=request.POST)
+        form = SignUpForm(request.POST)
 
-        if formulario.is_valid():
-            formulario.save()
-            user = authenticate(username=formulario.cleaned_data["username"]
-                                ,password=formulario.cleaned_data["password1"])
-            login(request,user)
-            data['form'] = formulario
-            return render(request, "index.html")
+        if form.is_valid():
+            form.save()
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password1')
+            user = authenticate(username=username, password=password)
+            login(request, user)
+            return redirect('inicio')
         else:
             return redirect('error')
-    return render(request, 'registration/register_user.html', data)
+    
+    return render(request, 'registration/register_user.html', {'form': form})
 
 def update_user(request):
     if request.user.is_authenticated:
